@@ -1,0 +1,502 @@
+/* NPCs de Candeh'ssa — the residents register (list + detail), the editor and the players window.
+   Own palette (a parchment register), so it reads the same with Foundry's light or dark theme. */
+
+.npc-libertacao {
+  --nl-paper: #f3e9d2;
+  --nl-paper-2: #fbf5e6;
+  --nl-paper-3: #e8dbbb;
+  --nl-line: #c9b48a;
+  --nl-ink: #2f2418;
+  --nl-ink-soft: #6c5a44;
+  --nl-accent: #7a3b1d;
+  --nl-accent-soft: #f0d9c4;
+  --nl-good: #2f6f3a;
+  --nl-warn: #9a5b0c;
+  --nl-bad: #a3302a;
+  --nl-gold: #c08a12;
+  --nl-cordial: #3d7a4a;
+  --nl-leal: #2c5a96;
+  --nl-intimo: #8a2f6d;
+  --nl-head-font: "Modesto Condensed", "Signika", Georgia, serif;
+  --nl-body-font: "Signika", "Segoe UI", Arial, sans-serif;
+}
+
+.npc-libertacao [hidden] { display: none !important; }
+
+.application.nl-app .window-content,
+.application.nl-editor-app .window-content { padding: 0; overflow: hidden; }
+.application.nl-players-app .window-content { padding: 0; }
+
+/* ---------------------------------------------------------------- */
+/*  Shared controls                                                 */
+/* ---------------------------------------------------------------- */
+
+.npc-libertacao .nl-root,
+.npc-libertacao .nl-editor,
+.npc-libertacao .nl-players {
+  background: var(--nl-paper);
+  color: var(--nl-ink);
+  font-family: var(--nl-body-font);
+  font-size: 0.9rem;
+}
+
+.application.npc-libertacao :is(input[type="text"], input[type="search"], select, textarea) {
+  background: var(--nl-paper-2);
+  color: var(--nl-ink);
+  border: 1px solid var(--nl-line);
+  border-radius: 5px;
+  font-family: var(--nl-body-font);
+  font-size: 0.9rem;
+}
+.npc-libertacao input::placeholder,
+.npc-libertacao textarea::placeholder { color: var(--nl-ink-soft); opacity: 0.8; }
+.application.npc-libertacao :is(input[type="text"], input[type="search"], select, textarea):focus { outline: 2px solid var(--nl-accent); outline-offset: 0; box-shadow: none; }
+.application.npc-libertacao select option { background: var(--nl-paper-2); color: var(--nl-ink); }
+
+.npc-libertacao .nl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: auto;
+  min-height: 30px;
+  margin: 0;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--nl-line);
+  border-radius: 6px;
+  background: var(--nl-paper-2);
+  color: var(--nl-ink);
+  font-family: var(--nl-body-font);
+  font-size: 0.85rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+.npc-libertacao .nl-btn:hover { background: #fff; border-color: var(--nl-accent); }
+.npc-libertacao .nl-btn:focus-visible { outline: 2px solid var(--nl-accent); outline-offset: 1px; }
+.npc-libertacao .nl-btn.is-active { background: var(--nl-accent); border-color: var(--nl-accent); color: #fff; }
+.npc-libertacao .nl-btn-icon { min-width: 30px; padding: 0.25rem 0.45rem; }
+.npc-libertacao .nl-btn-good { color: var(--nl-good); border-color: color-mix(in srgb, var(--nl-good) 50%, var(--nl-line)); }
+.npc-libertacao .nl-btn-warn { color: var(--nl-warn); border-color: color-mix(in srgb, var(--nl-warn) 50%, var(--nl-line)); }
+.npc-libertacao .nl-btn-bad { color: var(--nl-bad); border-color: color-mix(in srgb, var(--nl-bad) 50%, var(--nl-line)); }
+.npc-libertacao .nl-btn-primary { background: var(--nl-accent); border-color: var(--nl-accent); color: #fff; }
+.npc-libertacao .nl-btn-primary:hover { background: #8f4826; color: #fff; }
+
+.npc-libertacao .nl-mini {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--nl-line);
+  border-radius: 5px;
+  background: var(--nl-paper-2);
+  color: var(--nl-ink-soft);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.npc-libertacao .nl-mini:hover:not(:disabled) { border-color: var(--nl-accent); color: var(--nl-accent); }
+.npc-libertacao .nl-mini:disabled { opacity: 0.35; cursor: default; }
+.npc-libertacao .nl-mini.is-on { background: var(--nl-accent-soft); border-color: var(--nl-accent); color: var(--nl-accent); }
+.npc-libertacao .nl-mini.is-on.nl-star { background: #fbefc8; border-color: var(--nl-gold); color: var(--nl-gold); }
+
+.npc-libertacao .nl-spacer { flex: 1; }
+.npc-libertacao .nl-hint { margin: 0.35rem 0 0; color: var(--nl-ink-soft); font-size: 0.78rem; font-weight: normal; }
+.npc-libertacao .nl-unknown { margin: 0.25rem 0 0; color: var(--nl-ink-soft); font-style: italic; }
+.npc-libertacao .nl-star { color: var(--nl-gold); }
+.npc-libertacao .nl-row { display: flex; align-items: center; gap: 0.4rem; }
+
+/* ---------------------------------------------------------------- */
+/*  Residents window                                                */
+/* ---------------------------------------------------------------- */
+
+.npc-libertacao .nl-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  container-type: inline-size;
+}
+
+.npc-libertacao .nl-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--nl-line);
+  background: var(--nl-paper-3);
+}
+.npc-libertacao .nl-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 1 240px;
+  margin: 0;
+  color: var(--nl-ink-soft);
+}
+.npc-libertacao .nl-search input { flex: 1; min-width: 0; height: 30px; }
+.npc-libertacao .nl-toolbar select { width: auto; max-width: 220px; height: 30px; }
+.npc-libertacao .nl-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--nl-ink-soft);
+  font-size: 0.8rem;
+}
+
+.npc-libertacao .nl-body {
+  display: grid;
+  grid-template-columns: minmax(230px, 290px) 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+/* list */
+.npc-libertacao .nl-list {
+  margin: 0;
+  padding: 0.4rem;
+  list-style: none;
+  overflow-y: auto;
+  border-right: 1px solid var(--nl-line);
+  background: var(--nl-paper-3);
+}
+.npc-libertacao .nl-card { margin: 0 0 2px; }
+.npc-libertacao .nl-card > button {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--nl-ink);
+  font-family: var(--nl-body-font);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+}
+.npc-libertacao .nl-card > button:hover { background: rgba(255, 255, 255, 0.55); }
+.npc-libertacao .nl-card > button:focus-visible { outline: 2px solid var(--nl-accent); outline-offset: -2px; }
+.npc-libertacao .nl-card.is-selected > button { background: var(--nl-paper-2); border-color: var(--nl-accent); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
+.npc-libertacao .nl-card.is-hidden .nl-thumb { filter: grayscale(1); opacity: 0.6; }
+.npc-libertacao .nl-card.is-hidden .nl-card-text { opacity: 0.65; }
+.npc-libertacao .nl-nomatch { padding: 1rem 0.5rem; color: var(--nl-ink-soft); font-style: italic; text-align: center; }
+
+.npc-libertacao .nl-thumb {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--nl-color, #6c5a44);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 0 0 2px var(--nl-paper-2), 0 0 0 3px var(--nl-line);
+}
+.npc-libertacao .nl-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; border: 0; }
+.npc-libertacao .nl-card-text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.2; }
+.npc-libertacao .nl-card-text strong,
+.npc-libertacao .nl-card-text small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.npc-libertacao .nl-card-text small { color: var(--nl-ink-soft); font-size: 0.75rem; }
+.npc-libertacao .nl-card-flag { flex: none; color: var(--nl-ink-soft); font-size: 0.8rem; }
+.npc-libertacao .nl-card-flag.nl-star { color: var(--nl-gold); }
+.npc-libertacao .nl-tier-chip {
+  flex: none;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--nl-accent-soft);
+  color: var(--nl-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* detail */
+.npc-libertacao .nl-detail { min-width: 0; padding: 1rem 1.25rem 1.25rem; overflow-y: auto; }
+
+.npc-libertacao .nl-head { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 0.75rem; }
+.npc-libertacao .nl-portrait {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 132px;
+  height: 132px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--nl-color, #6c5a44);
+  color: #fff;
+  font-family: var(--nl-head-font);
+  font-size: 2.6rem;
+  box-shadow: 0 0 0 3px var(--nl-paper-2), 0 0 0 4px var(--nl-line), 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+.npc-libertacao .nl-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: top; border: 0; }
+.npc-libertacao .nl-portrait-btn {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.npc-libertacao .nl-portrait:hover .nl-portrait-btn,
+.npc-libertacao .nl-portrait-btn:focus-visible { opacity: 1; }
+
+.npc-libertacao .nl-head-text { flex: 1; min-width: 0; }
+.npc-libertacao .nl-head-text h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.2rem;
+  padding: 0;
+  border: 0;
+  color: var(--nl-ink);
+  font-family: var(--nl-head-font);
+  font-size: 2rem;
+  line-height: 1.1;
+}
+.npc-libertacao .nl-place { margin: 0 0 0.55rem; color: var(--nl-ink-soft); }
+.npc-libertacao .nl-badge-hidden {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--nl-ink-soft);
+  font-family: var(--nl-body-font);
+  font-size: 0.75rem;
+  font-weight: normal;
+}
+.npc-libertacao .nl-gm-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+.npc-libertacao .nl-desc { margin: 0 0 0.85rem; line-height: 1.45; white-space: pre-line; }
+
+.npc-libertacao .nl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.75rem; }
+.npc-libertacao .nl-box {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--nl-line);
+  border-radius: 8px;
+  background: var(--nl-paper-2);
+}
+.npc-libertacao .nl-grid .nl-box { margin: 0 0 0.75rem; }
+.npc-libertacao .nl-box h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.45rem;
+  padding: 0;
+  border: 0;
+  color: var(--nl-accent);
+  font-family: var(--nl-head-font);
+  font-size: 1.2rem;
+}
+.npc-libertacao .nl-box h3 .nl-mini { margin-left: auto; }
+.npc-libertacao .nl-box > p { margin: 0; line-height: 1.4; }
+
+/* likes and dislikes */
+.npc-libertacao .nl-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.npc-libertacao .nl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--nl-line);
+  border-radius: 999px;
+  background: var(--nl-paper);
+  color: var(--nl-ink);
+  font-family: var(--nl-body-font);
+  font-size: 0.82rem;
+  line-height: 1.25;
+  text-align: left;
+  white-space: normal;
+  box-shadow: none;
+}
+.npc-libertacao button.nl-chip { cursor: pointer; }
+.npc-libertacao .nl-chip.is-on { border-color: color-mix(in srgb, var(--nl-good) 45%, var(--nl-line)); background: #e5efdc; }
+.npc-libertacao .nl-chip.is-off { border-style: dashed; background: transparent; color: var(--nl-ink-soft); }
+.npc-libertacao .nl-chip i { font-size: 0.72rem; }
+.npc-libertacao .nl-chip.is-on i { color: var(--nl-good); }
+.npc-libertacao button.nl-chip:hover { border-color: var(--nl-accent); }
+
+/* GM sees text that the players do not see yet */
+.npc-libertacao .nl-secret {
+  padding-left: 0.55rem;
+  border-left: 3px dashed var(--nl-line);
+  color: var(--nl-ink-soft);
+}
+
+/* benefits */
+.npc-libertacao .nl-tiers { margin: 0; padding: 0; list-style: none; }
+.npc-libertacao .nl-tiers li {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr auto;
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--nl-paper-3);
+}
+.npc-libertacao .nl-tiers li:first-child { border-top: 0; padding-top: 0.1rem; }
+.npc-libertacao .nl-tier-name { display: flex; flex-direction: column; font-weight: 700; }
+.npc-libertacao .nl-tier-name small { color: var(--nl-ink-soft); font-size: 0.72rem; font-weight: normal; }
+.npc-libertacao .nl-tier-cordial .nl-tier-name { color: var(--nl-cordial); }
+.npc-libertacao .nl-tier-leal .nl-tier-name { color: var(--nl-leal); }
+.npc-libertacao .nl-tier-intimo .nl-tier-name { color: var(--nl-intimo); }
+.npc-libertacao .nl-tier-text { line-height: 1.4; }
+.npc-libertacao .nl-tiers .nl-unknown { margin: 0; }
+
+/* affinity */
+.npc-libertacao .nl-aff { width: 100%; margin: 0; border: 0; border-collapse: collapse; background: transparent; }
+.npc-libertacao .nl-aff thead { background: transparent; }
+.npc-libertacao .nl-aff th {
+  padding: 0.2rem 0.4rem;
+  border-bottom: 1px solid var(--nl-line);
+  background: transparent;
+  color: var(--nl-ink-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.npc-libertacao .nl-aff tr { background: transparent; }
+.npc-libertacao .nl-aff tbody tr:nth-child(even) { background: rgba(0, 0, 0, 0.03); }
+.npc-libertacao .nl-aff td { padding: 0.3rem 0.4rem; border-bottom: 1px solid var(--nl-paper-3); color: var(--nl-ink); vertical-align: middle; }
+.npc-libertacao .nl-aff-name { font-weight: 700; border-left: 4px solid transparent; }
+.npc-libertacao .nl-row-cordial .nl-aff-name { border-left-color: var(--nl-cordial); }
+.npc-libertacao .nl-row-leal .nl-aff-name { border-left-color: var(--nl-leal); }
+.npc-libertacao .nl-row-intimo .nl-aff-name { border-left-color: var(--nl-intimo); }
+.npc-libertacao .nl-aff-pa { white-space: nowrap; }
+.npc-libertacao .nl-aff-pa > * { vertical-align: middle; }
+.npc-libertacao .nl-aff-pa strong { display: inline-block; min-width: 1.1em; text-align: center; }
+.npc-libertacao .nl-pips { display: inline-flex; gap: 3px; margin: 0 0.3rem; }
+.npc-libertacao .nl-pips i {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border: 1px solid var(--nl-ink-soft);
+  border-radius: 50%;
+  background: transparent;
+}
+.npc-libertacao .nl-pips i.is-on { border-color: var(--nl-accent); background: var(--nl-accent); }
+.npc-libertacao .nl-row-cordial .nl-pips i.is-on { border-color: var(--nl-cordial); background: var(--nl-cordial); }
+.npc-libertacao .nl-row-leal .nl-pips i.is-on { border-color: var(--nl-leal); background: var(--nl-leal); }
+.npc-libertacao .nl-row-intimo .nl-pips i.is-on { border-color: var(--nl-intimo); background: var(--nl-intimo); }
+.npc-libertacao .nl-aff .nl-hint { display: inline; margin: 0; }
+
+/* GM notes */
+.npc-libertacao .nl-notes { background: #ece3f1; border-color: #c6b2d4; }
+.npc-libertacao .nl-notes summary { color: #5b3a73; font-weight: 700; cursor: pointer; }
+.npc-libertacao .nl-notes p { margin: 0.45rem 0 0; line-height: 1.4; white-space: pre-line; }
+
+.npc-libertacao .nl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 100%;
+  min-height: 200px;
+  color: var(--nl-ink-soft);
+  text-align: center;
+}
+.npc-libertacao .nl-empty i { font-size: 2.5rem; opacity: 0.5; }
+
+/* narrow window: list on top, detail below */
+@container (max-width: 760px) {
+  .npc-libertacao .nl-body { grid-template-columns: 1fr; grid-template-rows: minmax(120px, 34%) 1fr; }
+  .npc-libertacao .nl-list { border-right: 0; border-bottom: 1px solid var(--nl-line); }
+  .npc-libertacao .nl-grid { grid-template-columns: 1fr; }
+  .npc-libertacao .nl-portrait { width: 96px; height: 96px; font-size: 2rem; }
+  .npc-libertacao .nl-tiers li { grid-template-columns: 1fr auto; }
+  .npc-libertacao .nl-tier-text,
+  .npc-libertacao .nl-tiers .nl-unknown { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ---------------------------------------------------------------- */
+/*  Editor                                                          */
+/* ---------------------------------------------------------------- */
+
+.npc-libertacao .nl-editor { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.npc-libertacao .nl-scroll { flex: 1; min-height: 0; padding: 0.85rem 1rem 0.5rem; overflow-y: auto; }
+.npc-libertacao .nl-field { display: flex; flex-direction: column; gap: 0.25rem; margin: 0 0 0.65rem; font-weight: 700; }
+.npc-libertacao .nl-field .nl-hint { display: inline; margin: 0; }
+.npc-libertacao .nl-field input,
+.npc-libertacao .nl-field textarea { width: 100%; font-weight: normal; }
+.npc-libertacao .nl-field input { height: 30px; }
+.npc-libertacao .nl-field textarea { min-height: 2.5rem; padding: 0.35rem 0.45rem; line-height: 1.35; resize: vertical; }
+.npc-libertacao .nl-field .nl-row input { flex: 1; min-width: 0; }
+.npc-libertacao .nl-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 0.75rem; }
+.npc-libertacao .nl-ed-top { display: flex; gap: 0.9rem; align-items: flex-start; }
+.npc-libertacao .nl-ed-top-fields { flex: 1; min-width: 0; }
+.npc-libertacao .nl-ed-portrait { width: 110px; height: 110px; font-size: 2.2rem; }
+.npc-libertacao .nl-check { display: flex; align-items: center; gap: 0.45rem; margin: 0.2rem 0 0.4rem; font-weight: 700; }
+.npc-libertacao .nl-check input { margin: 0; }
+.npc-libertacao .nl-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  border-top: 1px solid var(--nl-line);
+  background: var(--nl-paper-3);
+}
+
+/* ---------------------------------------------------------------- */
+/*  Players window                                                  */
+/* ---------------------------------------------------------------- */
+
+.npc-libertacao .nl-players { padding: 0.85rem 1rem 0; }
+.npc-libertacao .nl-players > .nl-hint { margin: 0 0 0.65rem; }
+.npc-libertacao .nl-player-rows { margin: 0 0 0.65rem; padding: 0; list-style: none; }
+.npc-libertacao .nl-player-rows li {
+  display: grid;
+  grid-template-columns: 1fr 11rem auto;
+  gap: 0.4rem;
+  align-items: center;
+  margin: 0 0 0.35rem;
+}
+.npc-libertacao .nl-player-rows input,
+.npc-libertacao .nl-player-rows select { width: 100%; height: 30px; }
+.npc-libertacao .nl-players > .nl-row { flex-wrap: wrap; margin-bottom: 0.75rem; }
+.npc-libertacao .nl-players .nl-footer { margin: 0 -1rem; }
+
+/* ---------------------------------------------------------------- */
+/*  Chat                                                            */
+/* ---------------------------------------------------------------- */
+
+.npc-libertacao.nl-chat {
+  padding: 0.4rem 0.55rem;
+  border-left: 3px solid #7a3b1d;
+  border-radius: 4px;
+  background: rgba(122, 59, 29, 0.08);
+  line-height: 1.4;
+}
+.npc-libertacao.nl-chat i { margin-right: 0.2rem; color: #7a3b1d; }

@@ -1,0 +1,27 @@
+<div class="nl-players">
+  <p class="nl-hint">Os nomes que aparecem na tabela de Pontos de Afinidade de cada morador. Ligue cada personagem ao usuário do jogador se quiser que cada um veja só os próprios pontos (configuração do módulo).</p>
+  {{#if hasRows}}
+  <ul class="nl-player-rows">
+    {{#each rows}}
+    <li>
+      <input type="text" name="name{{i}}" value="{{name}}" placeholder="Nome do personagem" maxlength="80">
+      <select name="user{{i}}" title="Usuário do jogador">
+        <option value="">— sem usuário —</option>
+        {{#each users}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}
+      </select>
+      <button type="button" class="nl-mini" data-action="removeRow" data-index="{{i}}" title="Tirar"><i class="fa-solid fa-xmark"></i></button>
+    </li>
+    {{/each}}
+  </ul>
+  {{else}}
+  <p class="nl-unknown">Ninguém ainda.</p>
+  {{/if}}
+  <div class="nl-row">
+    <button type="button" class="nl-btn" data-action="add"><i class="fa-solid fa-plus"></i> Adicionar</button>
+    <button type="button" class="nl-btn" data-action="importUsers" title="Os personagens atribuídos aos usuários jogadores"><i class="fa-solid fa-file-import"></i> Importar personagens dos jogadores</button>
+  </div>
+  <footer class="nl-footer">
+    <span class="nl-spacer"></span>
+    <button type="submit" class="nl-btn nl-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+  </footer>
+</div>

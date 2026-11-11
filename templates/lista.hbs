@@ -1,0 +1,155 @@
+<section class="nl-root">
+  <header class="nl-toolbar">
+    <label class="nl-search" title="Buscar por nome ou local">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" name="q" value="{{q}}" placeholder="Buscar…" autocomplete="off">
+    </label>
+    <select name="local" title="Mostrar só um local">
+      <option value="">Todos os locais</option>
+      {{#each locais}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{value}}</option>{{/each}}
+    </select>
+    <span class="nl-spacer"></span>
+    {{#if gm}}
+    {{#if hiddenCount}}<span class="nl-count" title="Moradores ocultos dos jogadores"><i class="fa-solid fa-eye-slash"></i> {{hiddenCount}}</span>{{/if}}
+    <button type="button" class="nl-btn" data-action="players" title="Personagens dos jogadores e a quem cada um pertence"><i class="fa-solid fa-user-group"></i> Jogadores…</button>
+    <button type="button" class="nl-btn" data-action="newNpc"><i class="fa-solid fa-user-plus"></i> Novo morador</button>
+    <button type="button" class="nl-btn" data-action="showAll" title="Abrir esta lista na tela de todos, neste morador"><i class="fa-solid fa-users"></i> Mostrar a todos</button>
+    <button type="button" class="nl-btn {{#if playerView}}is-active{{/if}}" data-action="playerView" title="Ver como os jogadores veem"><i class="fa-solid fa-eye"></i></button>
+    {{/if}}
+  </header>
+
+  <div class="nl-body">
+    <ol class="nl-list">
+      {{#each cards}}
+      <li class="nl-card {{#if selected}}is-selected{{/if}} {{#if oculto}}is-hidden{{/if}}" data-npc-id="{{id}}" data-search="{{search}}" data-local="{{local}}">
+        <button type="button" data-action="select">
+          <span class="nl-thumb" style="--nl-color: {{color}}">{{#if img}}<img src="{{img}}" alt="">{{else}}{{initials}}{{/if}}</span>
+          <span class="nl-card-text">
+            <strong>{{nome}}</strong>
+            <small>{{local}}</small>
+          </span>
+          {{#if oculto}}<i class="fa-solid fa-eye-slash nl-card-flag" title="Oculto dos jogadores"></i>{{/if}}
+          {{#if ativo}}<i class="fa-solid fa-star nl-card-flag nl-star" title="Benefícios ativos para você"></i>{{/if}}
+          {{#if myTier}}<span class="nl-tier-chip">{{myTier}}</span>{{/if}}
+        </button>
+      </li>
+      {{/each}}
+      <li class="nl-nomatch" hidden>Nenhum morador com esse filtro.</li>
+    </ol>
+
+    <article class="nl-detail">
+      {{#if detail}}
+      {{#with detail}}
+      <header class="nl-head">
+        <div class="nl-portrait" style="--nl-color: {{color}}" {{#if @root.gm}}{{#unless @root.playerView}}title="Solte um ator aqui para usar a imagem dele"{{/unless}}{{/if}}>
+          {{#if img}}<img src="{{img}}" alt="">{{else}}<span>{{initials}}</span>{{/if}}
+          {{#if @root.gm}}{{#unless @root.playerView}}<button type="button" class="nl-portrait-btn" data-action="pickImage" title="Escolher ou enviar uma imagem"><i class="fa-solid fa-image"></i></button>{{/unless}}{{/if}}
+        </div>
+        <div class="nl-head-text">
+          <h2>{{nome}} {{#if oculto}}{{#unless @root.asPlayer}}<span class="nl-badge-hidden"><i class="fa-solid fa-eye-slash"></i> oculto</span>{{/unless}}{{/if}}</h2>
+          <p class="nl-place"><i class="fa-solid fa-location-dot"></i> {{#if local}}{{local}}{{else}}Local desconhecido{{/if}}{{#unless @root.asPlayer}}{{#if pagina}} · p. {{pagina}}{{/if}}{{/unless}}</p>
+          {{#unless @root.asPlayer}}
+          <div class="nl-gm-actions">
+            <button type="button" class="nl-btn" data-action="edit"><i class="fa-solid fa-pen"></i> Editar</button>
+            <button type="button" class="nl-btn {{#if oculto}}nl-btn-good{{else}}nl-btn-warn{{/if}}" data-action="toggleHidden">{{#if oculto}}<i class="fa-solid fa-eye"></i> Mostrar aos jogadores{{else}}<i class="fa-solid fa-eye-slash"></i> Ocultar morador{{/if}}</button>
+            <button type="button" class="nl-btn" data-action="revealAll" title="Revelar gostos, desgostos, Última Demanda e benefícios"><i class="fa-solid fa-lock-open"></i> Revelar tudo</button>
+            <button type="button" class="nl-btn" data-action="hideAll" title="Esconder gostos, desgostos, Última Demanda e benefícios"><i class="fa-solid fa-lock"></i> Esconder tudo</button>
+            {{#if book}}<button type="button" class="nl-btn nl-btn-icon" data-action="restore" title="Voltar ao texto do livro"><i class="fa-solid fa-book"></i></button>
+            {{else}}<button type="button" class="nl-btn nl-btn-icon nl-btn-bad" data-action="remove" title="Excluir"><i class="fa-solid fa-trash"></i></button>{{/if}}
+          </div>
+          {{/unless}}
+        </div>
+      </header>
+
+      {{#if descricao}}<p class="nl-desc">{{descricao}}</p>{{/if}}
+
+      <div class="nl-grid">
+        <section class="nl-box">
+          <h3><i class="fa-solid fa-heart"></i> Gosta de</h3>
+          <ul class="nl-chips">
+            {{#each gostos.list}}
+            <li>
+              {{#if @root.asPlayer}}<span class="nl-chip is-on">{{t}}</span>
+              {{else}}<button type="button" class="nl-chip {{#if rev}}is-on{{else}}is-off{{/if}}" data-action="toggleItem" data-kind="{{kind}}" data-index="{{i}}" title="{{#if rev}}Revelado: clique para esconder{{else}}Escondido: clique para revelar{{/if}}"><i class="fa-solid {{#if rev}}fa-eye{{else}}fa-eye-slash{{/if}}"></i> {{t}}</button>{{/if}}
+            </li>
+            {{/each}}
+          </ul>
+          {{#if gostos.unknown}}<p class="nl-unknown"><i class="fa-solid fa-circle-question"></i> {{gostos.unknown}} ainda por descobrir</p>{{/if}}
+          {{#unless gostos.total}}<p class="nl-unknown">Nada anotado.</p>{{/unless}}
+        </section>
+        <section class="nl-box">
+          <h3><i class="fa-solid fa-heart-crack"></i> Não gosta de</h3>
+          <ul class="nl-chips">
+            {{#each desgostos.list}}
+            <li>
+              {{#if @root.asPlayer}}<span class="nl-chip is-on">{{t}}</span>
+              {{else}}<button type="button" class="nl-chip {{#if rev}}is-on{{else}}is-off{{/if}}" data-action="toggleItem" data-kind="{{kind}}" data-index="{{i}}" title="{{#if rev}}Revelado: clique para esconder{{else}}Escondido: clique para revelar{{/if}}"><i class="fa-solid {{#if rev}}fa-eye{{else}}fa-eye-slash{{/if}}"></i> {{t}}</button>{{/if}}
+            </li>
+            {{/each}}
+          </ul>
+          {{#if desgostos.unknown}}<p class="nl-unknown"><i class="fa-solid fa-circle-question"></i> {{desgostos.unknown}} ainda por descobrir</p>{{/if}}
+          {{#unless desgostos.total}}<p class="nl-unknown">Nada anotado.</p>{{/unless}}
+        </section>
+      </div>
+
+      <section class="nl-box">
+        <h3><i class="fa-solid fa-scroll"></i> Última Demanda
+          {{#unless @root.asPlayer}}{{#unless demandaEmpty}}<button type="button" class="nl-mini {{#if demandaRev}}is-on{{/if}}" data-action="toggleField" data-field="demanda" title="{{#if demandaRev}}Revelada: clique para esconder{{else}}Escondida: clique para revelar{{/if}}"><i class="fa-solid {{#if demandaRev}}fa-eye{{else}}fa-eye-slash{{/if}}"></i></button>{{/unless}}{{/unless}}
+        </h3>
+        {{#if demandaText}}<p class="{{#unless demandaRev}}nl-secret{{/unless}}">{{demandaText}}</p>{{else}}<p class="nl-unknown"><i class="fa-solid fa-circle-question"></i> Ainda não revelada.</p>{{/if}}
+      </section>
+
+      <section class="nl-box">
+        <h3><i class="fa-solid fa-gift"></i> Benefícios da amizade</h3>
+        <ul class="nl-tiers">
+          {{#each tiers}}
+          <li class="nl-tier-{{key}}">
+            <span class="nl-tier-name">{{label}} <small>{{range}}</small></span>
+            {{#if t}}<span class="nl-tier-text {{#unless rev}}nl-secret{{/unless}}">{{t}}</span>{{else}}<span class="nl-unknown">{{#if empty}}—{{else}}Ainda não revelado.{{/if}}</span>{{/if}}
+            {{#unless @root.asPlayer}}{{#unless empty}}<button type="button" class="nl-mini {{#if rev}}is-on{{/if}}" data-action="toggleField" data-field="{{key}}" title="{{#if rev}}Revelado: clique para esconder{{else}}Escondido: clique para revelar{{/if}}"><i class="fa-solid {{#if rev}}fa-eye{{else}}fa-eye-slash{{/if}}"></i></button>{{/unless}}{{/unless}}
+          </li>
+          {{/each}}
+        </ul>
+        <p class="nl-hint">Cada personagem recebe os benefícios de um morador por vez (★), trocando a cada volta à cidade (p. 35).</p>
+      </section>
+
+      <section class="nl-box">
+        <h3><i class="fa-solid fa-handshake"></i> Pontos de Afinidade</h3>
+        {{#if hasRows}}
+        <table class="nl-aff">
+          <thead><tr><th>Personagem</th><th>PA</th><th>Nível</th><th title="Última Demanda cumprida">UD</th><th title="Benefícios ativos">★</th></tr></thead>
+          <tbody>
+            {{#each rows}}
+            <tr data-player-id="{{id}}" class="nl-row-{{tierKey}}">
+              <td class="nl-aff-name">{{name}}</td>
+              <td class="nl-aff-pa">
+                {{#unless @root.asPlayer}}<button type="button" class="nl-mini" data-action="paDown" {{#unless canDown}}disabled{{/unless}} title="−1 PA"><i class="fa-solid fa-minus"></i></button>{{/unless}}
+                <span class="nl-pips" title="{{pa}} de 7">{{#each pips}}<i class="{{#if on}}is-on{{/if}}"></i>{{/each}}</span>
+                <strong>{{pa}}</strong>
+                {{#unless @root.asPlayer}}<button type="button" class="nl-mini" data-action="paUp" {{#unless canUp}}disabled{{/unless}} title="+1 PA"><i class="fa-solid fa-plus"></i></button>{{/unless}}
+              </td>
+              <td>{{tier}}{{#if waitingUd}} <small class="nl-hint">(falta a Última Demanda)</small>{{/if}}</td>
+              <td>{{#if @root.asPlayer}}{{#if ud}}<i class="fa-solid fa-check"></i>{{/if}}{{else}}<button type="button" class="nl-mini {{#if ud}}is-on{{/if}}" data-action="toggleUd" title="Última Demanda cumprida"><i class="{{#if ud}}fa-solid fa-square-check{{else}}fa-regular fa-square{{/if}}"></i></button>{{/if}}</td>
+              <td>{{#if @root.asPlayer}}{{#if ativo}}<i class="fa-solid fa-star nl-star"></i>{{/if}}{{else}}<button type="button" class="nl-mini {{#if ativo}}is-on nl-star{{/if}}" data-action="toggleAtivo" title="Este é o morador cujos benefícios o personagem usa agora"><i class="fa-{{#if ativo}}solid{{else}}regular{{/if}} fa-star"></i></button>{{/if}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+        {{else}}
+        <p class="nl-unknown">{{#if @root.gm}}Cadastre os personagens em <strong>Jogadores…</strong> para anotar os pontos.{{else}}O mestre ainda não anotou afinidades.{{/if}}</p>
+        {{/if}}
+      </section>
+
+      {{#if showNotes}}
+      <details class="nl-box nl-notes" open>
+        <summary><i class="fa-solid fa-user-secret"></i> Notas do mestre (os jogadores nunca veem)</summary>
+        <p>{{notas}}</p>
+      </details>
+      {{/if}}
+      {{/with}}
+      {{else}}
+      <div class="nl-empty"><i class="fa-solid fa-users"></i><p>{{#if gm}}Nenhum morador. Crie um em “Novo morador”.{{else}}O mestre ainda não apresentou nenhum morador.{{/if}}</p></div>
+      {{/if}}
+    </article>
+  </div>
+</section>

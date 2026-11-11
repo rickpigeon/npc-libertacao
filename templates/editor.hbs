@@ -1,0 +1,48 @@
+<div class="nl-editor">
+  <div class="nl-scroll">
+    <div class="nl-ed-top">
+      <div class="nl-ed-portrait nl-portrait" style="--nl-color: {{color}}">{{#if n.img}}<img src="{{n.img}}" alt="">{{else}}<span>{{initials}}</span>{{/if}}</div>
+      <div class="nl-ed-top-fields">
+        <label class="nl-field">Nome <input type="text" name="nome" value="{{n.nome}}" maxlength="80"></label>
+        <label class="nl-field">Imagem
+          <span class="nl-row"><input type="text" name="img" value="{{n.img}}" placeholder="caminho da imagem"><button type="button" class="nl-btn nl-btn-icon" data-action="browse" title="Escolher ou enviar"><i class="fa-solid fa-folder-open"></i></button></span>
+        </label>
+        <div class="nl-grid-2">
+          <label class="nl-field">Local
+            <input type="text" name="local" value="{{n.local}}" list="nl-locais-{{n.id}}" maxlength="80">
+            <datalist id="nl-locais-{{n.id}}">{{#each locais}}<option value="{{this}}"></option>{{/each}}</datalist>
+          </label>
+          <label class="nl-field">Página <input type="text" name="pagina" value="{{n.pagina}}" maxlength="20"></label>
+        </div>
+      </div>
+    </div>
+    <label class="nl-field">Descrição <span class="nl-hint">(os jogadores veem quando o morador está visível)</span>
+      <textarea name="descricao" rows="4">{{n.descricao}}</textarea>
+    </label>
+    <div class="nl-grid-2">
+      <label class="nl-field">Gosta de <span class="nl-hint">(um por linha)</span>
+        <textarea name="gostos" rows="5">{{gostosText}}</textarea>
+      </label>
+      <label class="nl-field">Não gosta de <span class="nl-hint">(um por linha)</span>
+        <textarea name="desgostos" rows="5">{{desgostosText}}</textarea>
+      </label>
+    </div>
+    <label class="nl-field">Última Demanda
+      <textarea name="demanda" rows="3">{{n.demanda.t}}</textarea>
+    </label>
+    {{#each tiers}}
+    <label class="nl-field">Benefício {{label}} <span class="nl-hint">({{range}})</span>
+      <textarea name="{{key}}" rows="2">{{t}}</textarea>
+    </label>
+    {{/each}}
+    <label class="nl-field">Notas do mestre <span class="nl-hint">(os jogadores nunca veem)</span>
+      <textarea name="notas" rows="3">{{n.notas}}</textarea>
+    </label>
+    <label class="nl-check"><input type="checkbox" name="oculto" {{#if n.oculto}}checked{{/if}}> <span>Morador oculto dos jogadores</span></label>
+    <p class="nl-hint">O que já foi revelado continua revelado quando o texto daquela linha não muda. Linhas novas começam escondidas.</p>
+  </div>
+  <footer class="nl-footer">
+    <span class="nl-spacer"></span>
+    <button type="submit" class="nl-btn nl-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Salvar</button>
+  </footer>
+</div>
